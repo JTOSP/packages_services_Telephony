@@ -228,7 +228,8 @@ public class PhoneGlobals extends ContextWrapper {
                 // TODO: This event should be handled by the lock screen, just
                 // like the "SIM missing" and "Sim locked" cases (bug 1804111).
                 case EVENT_PERSO_LOCKED:
-                    if (getResources().getBoolean(R.bool.ignore_perso_locked_events)) {
+                    if (getResources().getBoolean(R.bool.ignore_perso_locked_events) ||
+                        getResources().getBoolean(R.bool.ignore_sim_network_locked_events)) {
                         // Some products don't have the concept of a "SIM network lock"
                         Log.i(LOG_TAG, "Ignoring EVENT_PERSO_LOCKED event; "
                               + "not showing 'PERSO unlock' PIN entry screen");
@@ -431,7 +432,6 @@ public class PhoneGlobals extends ContextWrapper {
             intentFilter.addAction(TelephonyIntents.ACTION_RADIO_TECHNOLOGY_CHANGED);
             intentFilter.addAction(TelephonyIntents.ACTION_SERVICE_STATE_CHANGED);
             intentFilter.addAction(TelephonyIntents.ACTION_EMERGENCY_CALLBACK_MODE_CHANGED);
-            intentFilter.addAction(TelephonyIntents.ACTION_MANAGED_ROAMING_IND);
             registerReceiver(mReceiver, intentFilter);
 
             //set the default values for the preferences in the phone.
@@ -865,14 +865,6 @@ public class PhoneGlobals extends ContextWrapper {
                         Intent.EXTRA_DOCK_STATE_UNDOCKED);
                 if (VDBG) Log.d(LOG_TAG, "ACTION_DOCK_EVENT -> mDockState = " + mDockState);
                 mHandler.sendMessage(mHandler.obtainMessage(EVENT_DOCK_STATE_CHANGED, 0));
-            } else if (action.equals(TelephonyIntents.ACTION_MANAGED_ROAMING_IND)) {
-                long subscription = intent.getLongExtra(PhoneConstants.SUBSCRIPTION_KEY,
-                        SubscriptionManager.getDefaultSubId());
-                Intent createIntent = new Intent();
-                createIntent.setClass(context, ManagedRoaming.class);
-                createIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                createIntent.putExtra(PhoneConstants.SUBSCRIPTION_KEY, subscription);
-                context.startActivity(createIntent);
             }
         }
     }
